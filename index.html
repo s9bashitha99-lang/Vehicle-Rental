@@ -1145,8 +1145,8 @@ filter:brightness(0.35);
  const VEHICLE_STATUS_KEY = 'rentmyride_vehicle_status_overrides';
  // Paste your project values here from Supabase Project Settings > API.
  // Use the project URL (https://<project-ref>.supabase.co) and the public anon/publishable key.
- const SUPABASE_URL = 'https://udwavctemzodqgcgnvwh.supabase.co';
- const SUPABASE_ANON_KEY = 'sb_publishable_R9v-M6Eu_pQ9e4JSCHNq-g_SLyPkGrn';
+ const SUPABASE_URL = 'https://kgtarvbnuwljqzcvmvpi.supabase.co';
+ const SUPABASE_ANON_KEY = 'sb_publishable_fdqlE-m0lZmOzuGS3X6Q0g_7ol3Si-p';
  const SUPABASE_VEHICLE_TABLE = 'vehicle_listings';
  const SUPABASE_BOOKING_TABLE = 'booking_requests';
 
@@ -1472,10 +1472,12 @@ filter:brightness(0.35);
    status: 'available',
    notes: document.getElementById('description').value.trim() || 'No additional notes from the owner.'
   });
+  const vehicleForDb = { ...newVehicle };
+  delete vehicleForDb.id; // Supabase generates the UUID primary key
 
   try{
    if(supabaseClient){
-    const { error } = await supabaseClient.from(SUPABASE_VEHICLE_TABLE).insert([newVehicle]);
+    const { error } = await supabaseClient.from(SUPABASE_VEHICLE_TABLE).insert([vehicleForDb]);
     if(error){
      // Supabase failed — save locally so the listing isn't lost
      console.warn('Supabase insert failed, saving locally:', error);
