@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RentMyRide — Rent a ride, list your ride</title>
+<link rel="icon" href="logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+ :root{
+  --asphalt:#1B1D1F;
+  --asphalt-soft:#26282B;
+  --cream:#F5F3EE;
+  --signal:#FFC93C;
+  --rust:#E4572E;
+  --green:#2F6B4F;
+  --line:#6B6F76;
+  --line-light:#9DA0A6;
+
+  --display: 'Big Shoulders Display', sans-serif;
+  --body: 'Work Sans', sans-serif;
+  --mono: 'Space Mono', monospace;
+ }
+
+ *{box-sizing:border-box;}
+ html{scroll-behavior:smooth;}
+ body{
+  margin:0;
+  background:var(--cream);
+  color:var(--asphalt);
+  font-family:var(--body);
+  line-height:1.5;
+ }
+ @media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+ }
+
+ a{color:inherit;}
+ img{max-width:100%;display:block;}
+
+ /* ---------- Lane divider ---------- */
+ .lane-divider{
+  height:10px;
+  background-image: repeating-linear-gradient(90deg, var(--signal) 0 36px, transparent 36px 64px);
+  background-color: var(--asphalt);
+ }
+
+ /* ---------- Header ---------- */
+ header{
+  background:var(--asphalt);
+  color:var(--cream);
+  padding:20px 6vw;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  position:sticky;
+  top:0;
+  z-index:50;
+ }
+ .logo{
+  font-family:var(--display);
+  font-weight:900;
+  font-size:1.7rem;
+  letter-spacing:0.5px;
+  text-decoration:none;
+  color:var(--cream);
+  display:flex;
+  align-items:center;
+  gap:10px;
+ }
+ .logo span{
+  color:var(--signal);
+ }
+ .logo-mark{
+  height:38px;
+  width:38px;
+  object-fit:contain;
+  border-radius:6px;
+  background:var(--cream);
+  padding:2px;
+ }
+
+ .db-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:18px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.07);
+  color:var(--line-light);
+  font-family:var(--mono);
+  font-size:0.78rem;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  border:1px solid rgba(255,255,255,0.12);
+ }
+ .db-pill::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--line-light);
+ }
+ .db-pill.online{
+  color:#d6ffe6;
+  border-color:rgba(47,107,79,0.45);
+  background:rgba(47,107,79,0.18);
+ }
+ .db-pill.online::before{ background:#6ee7a8; }
+ .db-pill.demo{
+  color:#ffe8b0;
+  border-color:rgba(255,201,60,0.30);
+  background:rgba(255,201,60,0.12);
+ }
+ .db-pill.demo::before{ background:var(--signal); }
+ .db-pill.error{
+  color:#ffd2ca;
+  border-color:rgba(228,87,46,0.30);
+  background:rgba(228,87,46,0.14);
+ }
+ .db-pill.error::before{ background:var(--rust); }
+ nav{
+  display:flex;
+  gap:28px;
+  align-items:center;
+  font-size:0.95rem;
+ }
+ nav a{
+  text-decoration:none;
+  color:var(--line-light);
+  transition:color .15s ease;
+ }
+ nav a:hover, nav a:focus-visible{color:var(--cream);}
+ .btn{
+  font-family:var(--body);
+  font-weight:600;
+  font-size:0.92rem;
+  border:none;
+  border-radius:3px;
+  padding:11px 20px;
+  cursor:pointer;
+  transition: transform .12s ease, box-shadow .12s ease;
+ }
+ .btn:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:3px solid var(--signal);
+  outline-offset:2px;
+ }
+ .btn-signal{
+  background:var(--signal);
+  color:var(--asphalt);
+ }
+ .btn-signal:hover{ transform:translateY(-2px); box-shadow:0 4px 0 var(--rust);}
+ .btn-outline{
+  background:transparent;
+  color:var(--cream);
+  border:1.5px solid var(--line);
+ }
+ .btn-outline:hover{border-color:var(--cream);}
+
+ /* ---------- Hero ---------- */
+ .hero{
+  background:var(--asphalt);
+  color:var(--cream);
+  padding:80px 6vw 90px;
+  position:relative;
+  overflow:hidden;
+ }
+ .hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size:22px 22px;
+  pointer-events:none;
+ }
+ .hero-inner{
+  position:relative;
+  max-width:1180px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap:50px;
+  align-items:center;
+ }
+ .eyebrow{
+  font-family:var(--mono);
+  text-transform:uppercase;
+  letter-spacing:3px;
+  font-size:0.75rem;
+  color:var(--signal);
+  margin-bottom:18px;
+ }
+ h1{
+  font-family:var(--display);
+  font-weight:900;
+  font-size:clamp(2.6rem, 6vw, 5.2rem);
+  line-height:0.95;
+  margin:0 0 22px;
+  letter-spacing:0.5px;
+ }
+ h1 em{
+  font-style:normal;
+  color:var(--signal);
+ }
+ .hero p.lede{
+  font-size:1.1rem;
+  color:var(--line-light);
+  max-width:46ch;
+  margin:0 0 34px;
+ }
+ .hero-ctas{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+ }
+
+ /* license plate signature card in hero */
+ .plate-stack{
+  position:relative;
+  height:340px;
+ }
+ .plate{
+  position:absolute;
+  width:300px;
+  background:var(--cream);
+  border-radius:10px;
+  padding:22px 24px;
+  box-shadow:0 18px 40px rgba(0,0,0,0.45);
+  border:3px solid var(--asphalt-soft);
+ }
+ .plate-1{
+  top:0; right:30px;
+  transform:rotate(4deg);
+  z-index:2;
+ }
+ .plate-2{
+  top:90px; right:90px;
+  transform:rotate(-7deg);
+  background:var(--signal);
+  z-index:1;
+ }
+ .plate-label{
+  font-family:var(--mono);
+  font-size:0.65rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--line);
+  margin-bottom:8px;
+ }
+ .plate-number{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:2.2rem;
+  letter-spacing:3px;
+  color:var(--asphalt);
+ }
+ .plate-2 .plate-label, .plate-2 .plate-number{color:var(--asphalt);}
+
+ /* ---------- Sections ---------- */
+ section{
+  padding:70px 6vw;
+  max-width:1180px;
+  margin:0 auto;
+ }
+ .section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:20px;
+  margin-bottom:38px;
+  flex-wrap:wrap;
+ }
+ .section-head h2{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(2rem, 4vw, 2.8rem);
+  margin:0;
+ }
+ .section-head .tag{
+  font-family:var(--mono);
+  font-size:0.78rem;
+  color:var(--line);
+  text-transform:uppercase;
+  letter-spacing:2px;
+ }
+
+ /* ---------- Filters ---------- */
+ .filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:30px;
+ }
+ .filter-chip{
+  font-family:var(--mono);
+  font-size:0.8rem;
+  background:transparent;
+  border:1.5px solid var(--line);
+  color:var(--asphalt);
+  padding:8px 16px;
+  border-radius:30px;
+  cursor:pointer;
+  transition:all .15s ease;
+ }
+ .filter-chip:hover{border-color:var(--asphalt);}
+ .filter-chip.active{
+  background:var(--asphalt);
+  color:var(--cream);
+  border-color:var(--asphalt);
+ }
+
+ /* ---------- Vehicle grid (ticket cards) ---------- */
+ .grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  gap:26px;
+ }
+ .ticket{
+  background:#fff;
+  border-radius:8px;
+  overflow:hidden;
+  border:1px solid #E2DFD6;
+  display:flex;
+  flex-direction:column;
+  transition:transform .15s ease, box-shadow .15s ease;
+ }
+ .ticket:hover{
+  transform:translateY(-4px);
+  box-shadow:0 14px 30px rgba(27,29,31,0.12);
+ }
+ .ticket-media{
+  height:160px;
+  background:var(--asphalt-soft);
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--line-light);
+  font-family:var(--mono);
+  font-size:0.75rem;
+  letter-spacing:1px;
+  overflow:hidden;
+ }
+ .ticket-media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+ }
+ .odo-tag{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  color:var(--line);
+ }
+ .photo-upload{
+  border:1.5px dashed var(--line);
+  border-radius:6px;
+  padding:14px;
+  text-align:center;
+  cursor:pointer;
+  background:#fff;
+ }
+ .photo-upload:hover{border-color:var(--asphalt);}
+ .photo-upload.disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+ }
+ .photo-preview{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(70px, 1fr));
+  gap:8px;
+ }
+ .photo-thumb{
+  position:relative;
+  border-radius:6px;
+  overflow:hidden;
+  height:70px;
+ }
+ .photo-thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+ }
+ .photo-thumb button{
+  position:absolute;
+  top:2px; right:2px;
+  width:18px; height:18px;
+  border:none;
+  border-radius:50%;
+  background:rgba(27,29,31,0.75);
+  color:#fff;
+  font-size:0.7rem;
+  line-height:1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+ }
+ .photo-count-note{
+  font-family:var(--mono);
+  font-size:0.7rem;
+  color:var(--line);
+  margin-top:4px;
+  display:block;
+ }
+ .ticket-media .photo-count-badge{
+  position:absolute;
+  bottom:8px; right:10px;
+  background:rgba(27,29,31,0.7);
+  color:#fff;
+  font-family:var(--mono);
+  font-size:0.68rem;
+  padding:3px 8px;
+  border-radius:12px;
+ }
+ .status-badge{
+  position:absolute;
+  top:12px; left:12px;
+  font-family:var(--mono);
+  font-size:0.68rem;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  padding:5px 10px;
+  border-radius:20px;
+  background:var(--green);
+  color:#fff;
+ }
+ .status-badge.booked{background:var(--rust);}
+ .ticket-perf{
+  height:0;
+  border-top:2px dashed #D8D4C8;
+  position:relative;
+ }
+ .ticket-perf::before, .ticket-perf::after{
+  content:"";
+  position:absolute;
+  top:-9px;
+  width:18px; height:18px;
+  background:var(--cream);
+  border-radius:50%;
+ }
+ .ticket-perf::before{left:-9px;}
+ .ticket-perf::after{right:-9px;}
+ .ticket-body{
+  padding:18px 20px 20px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+ }
+ .ticket-type{
+  font-family:var(--mono);
+  font-size:0.68rem;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  color:var(--line);
+ }
+ .ticket-name{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:1.5rem;
+  line-height:1;
+ }
+ .ticket-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:0.85rem;
+  color:var(--line);
+ }
+ .ticket-price{
+  font-family:var(--mono);
+  font-weight:700;
+  color:var(--asphalt);
+  font-size:1.05rem;
+ }
+ .ticket-price small{
+  font-weight:400;
+  color:var(--line);
+  font-size:0.7rem;
+ }
+ .ticket-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:auto;
+  padding-top:8px;
+ }
+ .owner-tag{
+  font-size:0.78rem;
+  color:var(--line);
+ }
+ .btn-small{
+  font-family:var(--body);
+  font-weight:600;
+  font-size:0.82rem;
+  background:var(--asphalt);
+  color:var(--cream);
+  border:none;
+  border-radius:4px;
+  padding:8px 14px;
+  cursor:pointer;
+ }
+ .btn-small:hover{background:var(--rust);}
+
+ .empty-state{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--line);
+  font-family:var(--mono);
+  font-size:0.9rem;
+ }
+
+ /* ---------- How it works ---------- */
+ .how{
+  background:var(--asphalt-soft);
+  color:var(--cream);
+ }
+ .how .section-head h2, .how .section-head .tag{color:var(--cream);}
+ .how .section-head .tag{color:var(--signal);}
+ .steps{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:30px;
+ }
+ .step{
+  border-left:3px solid var(--signal);
+  padding-left:18px;
+ }
+ .step .num{
+  font-family:var(--mono);
+  color:var(--signal);
+  font-size:0.85rem;
+ }
+ .step h3{
+  font-family:var(--display);
+  font-size:1.5rem;
+  margin:6px 0 8px;
+ }
+ .step p{
+  color:var(--line-light);
+  font-size:0.92rem;
+  margin:0;
+ }
+
+ /* ---------- Owner CTA banner ---------- */
+ .owner-banner{
+  background:var(--signal);
+  border-radius:10px;
+  padding:46px 6vw;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:30px;
+  flex-wrap:wrap;
+ }
+ .owner-banner h2{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:clamp(1.7rem, 3.4vw, 2.4rem);
+  margin:0 0 8px;
+ }
+ .owner-banner p{margin:0; max-width:50ch; color:var(--asphalt-soft);}
+
+ /* ---------- Footer ---------- */
+ footer{
+  background:var(--asphalt);
+  color:var(--line-light);
+  padding:40px 6vw 30px;
+  font-size:0.85rem;
+ }
+ .footer-inner{
+  max-width:1180px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+ }
+ .footer-inner .logo{font-size:1.2rem;}
+
+ /* ---------- Modal ---------- */
+ .modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(27,29,31,0.7);
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  padding:5vh 20px;
+  overflow-y:auto;
+  z-index:200;
+ }
+ .modal-overlay.open{display:flex;}
+ .modal{
+  background:var(--cream);
+  width:100%;
+  max-width:560px;
+  border-radius:10px;
+  padding:36px 34px 30px;
+  position:relative;
+  margin-top:20px;
+ }
+ .modal-close{
+  position:absolute;
+  top:18px; right:18px;
+  background:none;
+  border:none;
+  font-size:1.4rem;
+  cursor:pointer;
+  color:var(--line);
+  line-height:1;
+ }
+ .modal-close:hover{color:var(--asphalt);}
+ .modal h2{
+  font-family:var(--display);
+  font-weight:800;
+  font-size:2rem;
+  margin:0 0 4px;
+ }
+ .modal .modal-sub{
+  color:var(--line);
+  font-size:0.9rem;
+  margin:0 0 26px;
+ }
+ .form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-bottom:14px;
+ }
+ .form-row.single{grid-template-columns:1fr;}
+ label{
+  display:block;
+  font-family:var(--mono);
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--line);
+  margin-bottom:6px;
+ }
+ input, select, textarea{
+  width:100%;
+  font-family:var(--body);
+  font-size:0.95rem;
+  padding:10px 12px;
+  border:1.5px solid #D8D4C8;
+  border-radius:5px;
+  background:#fff;
+  color:var(--asphalt);
+ }
+ textarea{resize:vertical; min-height:70px;}
+ .modal .btn{width:100%; margin-top:8px; font-size:1rem; padding:13px;}
+ .form-note{
+  font-size:0.78rem;
+  color:var(--line);
+  margin-top:12px;
+  text-align:center;
+ }
+ .confirm{
+  text-align:center;
+  padding:20px 0 6px;
+ }
+ .confirm .mark{
+  font-family:var(--mono);
+  color:var(--green);
+  font-size:0.8rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+ }
+ .confirm h2{margin-top:8px;}
+ .confirm p{color:var(--line);}
+
+
+ /* ---------- Booking modal ---------- */
+ .owner-details{
+  border:1px solid #E2DFD6;
+  background:#fff;
+  border-radius:8px;
+  padding:14px 16px;
+  margin-bottom:18px;
+ }
+ .owner-details .label{
+  font-family:var(--mono);
+  font-size:0.7rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--line);
+  margin-bottom:8px;
+ }
+ .owner-details .value{
+  font-size:0.95rem;
+  color:var(--asphalt);
+  margin:0 0 4px;
+ }
+ .owner-details .value strong{
+  display:block;
+  font-family:var(--display);
+  font-size:1.15rem;
+  margin-bottom:4px;
+ }
+ .helper-note{
+  font-size:0.78rem;
+  color:var(--line);
+  margin-top:8px;
+ }
+
+ /* ---------- Responsive ---------- */
+ @media (max-width:880px){
+  .hero-inner{grid-template-columns:1fr; gap:50px;}
+  .plate-stack{height:260px;}
+  .plate{width:230px; padding:18px;}
+  .plate-number{font-size:1.6rem;}
+  nav{display:none;}
+  .steps{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+ }
+
+.hero-bg-slider{
+position:absolute;
+inset:0;
+overflow:hidden;
+z-index:0;
+}
+.hero-bg-slider img{
+position:absolute;
+inset:0;
+width:100%;
+height:100%;
+object-fit:cover;
+opacity:0;
+transition:opacity 1s ease-in-out;
+filter:brightness(0.35);
+}
+.hero-bg-slider img.active{opacity:1;}
+.hero-inner{position:relative;z-index:2;}
+
+</style>
+</head>
+<body>
+
+<header>
+ <a href="#top" class="logo"><img src="logo.png" alt="RentMyRide" class="logo-mark">Rent<span>My</span>Ride</a>
+ <nav>
+  <a href="#browse">Browse rides</a>
+  <a href="#how">How it works</a>
+  <a href="#list">List a vehicle</a>
+ </nav>
+ <button class="btn btn-signal" id="openModalBtn">List your vehicle</button>
+</header>
+
+<div class="lane-divider"></div>
+
+<main id="top">
+
+ <!-- HERO -->
+ <section class="hero" style="padding-top:80px;">
+  <div class="hero-bg-slider">
+   <img class="active" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70">
+   <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7">
+   <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a">
+   <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d">
+  </div>
+  <div class="hero-inner">
+   <div>
+    <p class="eyebrow">Peer-to-peer vehicle rental</p>
+    <h1>Borrow wheels.<br>Or rent out <em>yours</em>.</h1>
+    <p class="lede">RentMyRide connects drivers who need a vehicle for a day with owners whose vehicle is parked doing nothing. List in five minutes. Book in two.</p>
+    <div class="hero-ctas">
+     <button class="btn btn-signal" onclick="document.getElementById('browse').scrollIntoView()">Find a vehicle</button>
+     <button class="btn btn-outline" id="openModalBtn2">Register as an owner</button>
+    </div>
+    <div class="db-pill demo" id="dbStatus">Database: demo mode</div>
+   </div>
+   <div class="plate-stack" aria-hidden="true" style="display:flex; align-items:center; justify-content:center;">
+    <img src="logo-full-clean.png" alt="" style="max-width:380px; width:100%; filter:drop-shadow(0 18px 40px rgba(0,0,0,0.45));">
+   </div>
+  </div>
+ </section>
+
+ <div class="lane-divider"></div>
+
+ <!-- BROWSE -->
+ <section id="browse">
+  <div class="section-head">
+   <div>
+    <p class="tag">Available now</p>
+    <h2>Find your next ride</h2>
+   </div>
+   <p style="font-family:var(--mono); font-size:0.8rem; color:var(--line);"><span id="resultCount">0</span> vehicles listed</p>
+  </div>
+
+  <div class="filters" id="filters">
+   <button class="filter-chip active" data-filter="all">All</button>
+   <button class="filter-chip" data-filter="car">Cars</button>
+   <button class="filter-chip" data-filter="bike">Motorbikes</button>
+   <button class="filter-chip" data-filter="van">Vans</button>
+   <button class="filter-chip" data-filter="suv">SUVs</button>
+  </div>
+
+  <div class="grid" id="vehicleGrid"></div>
+ </section>
+
+ <div class="lane-divider"></div>
+
+ <!-- HOW IT WORKS -->
+ <section class="how" id="how">
+  <div class="section-head">
+   <div>
+    <p class="tag">For owners</p>
+    <h2>Your vehicle, working for you</h2>
+   </div>
+  </div>
+  <div class="steps">
+   <div class="step">
+    <p class="num">01</p>
+    <h3>Register the vehicle</h3>
+    <p>Tell us the make, model, plate number and your daily rate. Takes about five minutes.</p>
+   </div>
+   <div class="step">
+    <p class="num">02</p>
+    <h3>Get listed</h3>
+    <p>Your vehicle appears on the board immediately, ready for nearby renters to find.</p>
+   </div>
+   <div class="step">
+    <p class="num">03</p>
+    <h3>Accept bookings</h3>
+    <p>Renters reach out directly. You set the terms, hand over the keys, and earn.</p>
+   </div>
+  </div>
+ </section>
+
+ <div class="lane-divider"></div>
+
+ <!-- OWNER BANNER -->
+ <section id="list">
+  <div class="owner-banner">
+   <div>
+    <h2>Got a vehicle sitting idle?</h2>
+    <p>List it on RentMyRide and start earning from trips you're not taking.</p>
+   </div>
+   <button class="btn" style="background:var(--asphalt); color:var(--cream);" id="openModalBtn3">Register your vehicle</button>
+  </div>
+ </section>
+
+</main>
+
+<footer>
+ <div class="footer-inner">
+  <a href="#top" class="logo"><img src="logo.png" alt="RentMyRide" class="logo-mark">Rent<span>My</span>Ride</a>
+  <p>&copy; 2026 RentMyRide. Contact: sl.rentmyride@gmail.com</p>
+ </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+ <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <button class="modal-close" id="modalCloseBtn" aria-label="Close">&times;</button>
+
+  <div id="formView">
+   <h2 id="modalTitle">Register your vehicle</h2>
+   <p class="modal-sub">List your vehicle so renters nearby can find it.</p>
+   <form id="ownerForm">
+    <div class="form-row">
+     <div>
+      <label for="ownerName">Owner name</label>
+      <input id="ownerName" type="text" required placeholder="A. Perera">
+     </div>
+     <div>
+      <label for="ownerPhone">Contact number</label>
+      <input id="ownerPhone" type="tel" required placeholder="077 123 4567">
+     </div>
+    </div>
+    <div class="form-row single">
+     <div>
+      <label for="ownerEmail">Email address</label>
+      <input id="ownerEmail" type="email" required placeholder="owner@example.com">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="vehicleType">Vehicle type</label>
+      <select id="vehicleType" required>
+       <option value="car">Car</option>
+       <option value="bike">Motorbike</option>
+       <option value="van">Van</option>
+       <option value="suv">SUV</option>
+      </select>
+     </div>
+     <div>
+      <label for="vehicleModel">Make &amp; model</label>
+      <input id="vehicleModel" type="text" required placeholder="Toyota Aqua">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="plateNumber">Plate number</label>
+      <input id="plateNumber" type="text" required placeholder="WP CAB-1234">
+     </div>
+     <div>
+      <label for="dailyRate">Daily rate (USD)</label>
+      <input id="dailyRate" type="number" min="1" required placeholder="42">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="location">Location</label>
+      <input id="location" type="text" required placeholder="Kurunegala">
+     </div>
+     <div>
+      <label for="seats">Seats</label>
+      <input id="seats" type="number" min="1" placeholder="4">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="mileage">Running meter / odometer (km)</label>
+      <input id="mileage" type="number" min="0" required placeholder="45000">
+     </div>
+     <div>
+      <label for="vehiclePhoto">Vehicle photos (up to 5)</label>
+      <label class="photo-upload" id="photoUploadLabel" for="vehiclePhoto">
+       <span id="photoUploadText">Click to choose photos</span>
+       <span class="photo-count-note" id="photoCountNote">0 / 5 selected</span>
+      </label>
+      <input id="vehiclePhoto" type="file" accept="image/*" multiple style="display:none;">
+      <div class="photo-preview" id="photoPreview"></div>
+     </div>
+    </div>
+    <div class="form-row single">
+     <div>
+      <label for="description">Notes for renters</label>
+      <textarea id="description" placeholder="Fuel-efficient, AC, automatic transmission."></textarea>
+     </div>
+    </div>
+    <button type="submit" class="btn btn-signal">List my vehicle</button>
+    <p class="form-note">Your listing appears on the board instantly — no approval wait.</p>
+   </form>
+  </div>
+
+  <div id="confirmView" style="display:none;">
+   <div class="confirm">
+    <p class="mark">Listed</p>
+    <h2 id="confirmName">You're on the board</h2>
+    <p>Renters can now see your vehicle in the browse section. You'll be contacted directly when someone wants to book.</p>
+    <button class="btn btn-signal" id="confirmCloseBtn" style="width:auto; padding:11px 24px;">Done</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingOverlay">
+ <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+  <button class="modal-close" id="bookingCloseBtn" aria-label="Close">&times;</button>
+
+  <div id="bookingView">
+   <h2 id="bookingTitle">Request to book</h2>
+   <p class="modal-sub">See the owner's contact details and send a booking request.</p>
+
+   <div class="owner-details" id="ownerDetailsBox">
+    <div class="label">Vehicle owner</div>
+    <p class="value"><strong id="bookingVehicleName">Vehicle</strong><span id="bookingOwnerName">Owner name</span></p>
+    <p class="value" style="margin-bottom:2px;">Contact: <span id="bookingOwnerPhone">—</span></p>
+    <p class="value">Email: <span id="bookingOwnerEmail">—</span></p>
+   </div>
+
+   <form id="bookingForm">
+    <div class="form-row">
+     <div>
+      <label for="customerName">Name</label>
+      <input id="customerName" type="text" required placeholder="Your name">
+     </div>
+     <div>
+      <label for="customerId">ID number</label>
+      <input id="customerId" type="text" required placeholder="NIC / Passport">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="customerContact">Contact no</label>
+      <input id="customerContact" type="tel" required placeholder="077 123 4567">
+     </div>
+     <div>
+      <label for="customerEmail">Email</label>
+      <input id="customerEmail" type="email" required placeholder="you@example.com">
+     </div>
+    </div>
+    <div class="form-row">
+     <div>
+      <label for="rentalDays">How many days you need the vehicle</label>
+      <input id="rentalDays" type="number" min="1" required placeholder="3">
+     </div>
+     <div>
+      <label for="pickupDate">Pickup date</label>
+      <input id="pickupDate" type="date" required>
+     </div>
+    </div>
+    <div class="form-row single">
+     <div>
+      <label for="bookingNotes">Notes (optional)</label>
+      <textarea id="bookingNotes" placeholder="Add any delivery or trip details."></textarea>
+     </div>
+    </div>
+    <button type="submit" class="btn btn-signal">Send request</button>
+    <p class="form-note">A booking email will be sent automatically to the vehicle owner.</p>
+   </form>
+  </div>
+
+  <div id="bookingConfirmView" style="display:none;">
+   <div class="confirm">
+    <p class="mark">✉ Email Ready</p>
+    <h2 id="bookingConfirmName">Booking request sent</h2>
+    <p>Your booking request has been emailed to the vehicle owner automatically.</p>
+    <button class="btn btn-signal" id="bookingDoneBtn" style="width:auto; padding:11px 24px;">Done</button>
+   </div>
+  </div>
+ </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+
+ // ---------- Auto Email System ----------
+ // Sends booking requests directly through EmailJS.
+ // Connect the EmailJS service to the Gmail address: sl.rentmyride@gmail.com
+ // and replace the configuration values below with your EmailJS details.
+
+ const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
+ const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
+ const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+
+ function buildBookingEmailBody(bookingRequest) {
+  return (
+   `Dear ${bookingRequest.owner},
+
+` +
+   `I would like to request a booking for your ${bookingRequest.vehicle_model} via RentMyRide.
+
+` +
+   `My details:
+` +
+   `Name: ${bookingRequest.customer_name}
+` +
+   `NIC / Passport: ${bookingRequest.customer_id}
+` +
+   `Phone: ${bookingRequest.customer_contact}
+` +
+   `Email: ${bookingRequest.customer_email}
+` +
+   `Rental days: ${bookingRequest.rental_days}
+` +
+   `Pickup date: ${bookingRequest.pickup_date}
+` +
+   `Notes: ${bookingRequest.notes || 'None.'}
+
+` +
+   `Please let me know if the vehicle is available on the requested date.
+
+` +
+   `Thank you,
+` +
+   `${bookingRequest.customer_name}`
+  );
+ }
+
+ async function sendOwnerEmail(bookingRequest){
+  const ownerEmail = bookingRequest.owner_email;
+  if(!ownerEmail) return { sent:false, reason:'no-owner-email' };
+
+  const subject = `Booking Request – ${bookingRequest.vehicle_model} (${bookingRequest.pickup_date})`;
+  const emailBody = buildBookingEmailBody(bookingRequest);
+
+  try {
+   if (
+    !EMAILJS_SERVICE_ID ||
+    !EMAILJS_TEMPLATE_ID ||
+    EMAILJS_SERVICE_ID.startsWith('YOUR_') ||
+    EMAILJS_TEMPLATE_ID.startsWith('YOUR_') ||
+    EMAILJS_PUBLIC_KEY.startsWith('YOUR_')
+   ) {
+    console.warn('EmailJS is not configured yet.');
+    return { sent: false, reason: 'emailjs-not-configured', body: emailBody };
+   }
+
+   const templateParams = {
+    to_email: ownerEmail,
+    to_name: bookingRequest.owner,
+    from_name: 'RentMyRide',
+    reply_to: bookingRequest.customer_email,
+    subject,
+    message: emailBody,
+    vehicle_model: bookingRequest.vehicle_model,
+    owner_name: bookingRequest.owner,
+    customer_name: bookingRequest.customer_name,
+    customer_id: bookingRequest.customer_id,
+    customer_contact: bookingRequest.customer_contact,
+    customer_email: bookingRequest.customer_email,
+    rental_days: String(bookingRequest.rental_days),
+    pickup_date: bookingRequest.pickup_date,
+    notes: bookingRequest.notes || 'None.'
+   };
+
+   const result = await emailjs.send(
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    templateParams,
+    { publicKey: EMAILJS_PUBLIC_KEY }
+   );
+
+   return { sent: true, method: 'emailjs', result, body: emailBody };
+  } catch (err) {
+   console.error('EmailJS send failed:', err);
+   return { sent: false, reason: 'emailjs-send-failed', error: err, body: emailBody };
+  }
+ }
+
+
+ // ---------- Seed data ----------
+ const DEMO_VEHICLES = [
+  {id:'demo-1', type:'car', model:'Toyota Aqua', owner:'Nadeesha K.', owner_contact:'077 111 2222', owner_email:'nadeesha@example.com', plate:'WP CAB-1234', rate:42, location:'Kurunegala', seats:4, mileage:38500, photos:[], status:'available', notes:'Fuel-efficient hybrid, automatic.'},
+  {id:'demo-2', type:'bike', model:'Bajaj Pulsar 150', owner:'Tharindu S.', owner_contact:'071 222 3333', owner_email:'tharindu@example.com', plate:'KU-8821', rate:14, location:'Kurunegala', seats:2, mileage:21200, photos:[], status:'available', notes:'Great for city commutes.'},
+  {id:'demo-3', type:'van', model:'Toyota HiAce', owner:'M. Fernando', owner_contact:'075 333 4444', owner_email:'mfernando@example.com', plate:'WP NA-5610', rate:78, location:'Colombo', seats:12, mileage:96400, photos:[], status:'booked', notes:'Ideal for group travel and moving.'},
+  {id:'demo-4', type:'suv', model:'Suzuki Vitara', owner:'R. Jayasuriya', owner_contact:'076 444 5555', owner_email:'rjayasuriya@example.com', plate:'CP CAA-9087', rate:65, location:'Kandy', seats:5, mileage:54300, photos:[], status:'available', notes:'4WD, good for hill country roads.'},
+  {id:'demo-5', type:'car', model:'Honda Civic', owner:'I. Wickrama', owner_contact:'078 555 6666', owner_email:'iwickrama@example.com', plate:'WP CBA-3321', rate:48, location:'Negombo', seats:5, mileage:62100, photos:[], status:'available', notes:'Sporty, manual transmission.'},
+  {id:'demo-6', type:'bike', model:'Honda Dio', owner:'S. Abeysena', owner_contact:'072 666 7777', owner_email:'sabeysena@example.com', plate:'KU-4456', rate:10, location:'Kurunegala', seats:2, mileage:9800, photos:[], status:'available', notes:'Light and easy to park.'},
+ ];
+
+ const STORAGE_KEY = 'rentmyride_local_listings';
+ const VEHICLE_STATUS_KEY = 'rentmyride_vehicle_status_overrides';
+ // Paste your project values here from Supabase Project Settings > API.
+ // Use the project URL (https://<project-ref>.supabase.co) and the public anon/publishable key.
+ const SUPABASE_URL = 'https://udwavctemzodqgcgnvwh.supabase.co';
+ const SUPABASE_ANON_KEY = 'sb_publishable_R9v-M6Eu_pQ9e4JSCHNq-g_SLyPkGrn';
+ const SUPABASE_VEHICLE_TABLE = 'vehicle_listings';
+ const SUPABASE_BOOKING_TABLE = 'booking_requests';
+
+ let supabaseClient = null;
+ let vehicles = [];
+ let activeFilter = 'all';
+
+ const dbStatusEl = document.getElementById('dbStatus');
+
+ function setDbStatus(kind, text){
+  dbStatusEl.classList.remove('online', 'demo', 'error');
+  dbStatusEl.classList.add(kind);
+  dbStatusEl.textContent = text;
+ }
+
+ function typeLabel(type){
+  const labels = {car:'Car', bike:'Motorbike', van:'Van', suv:'SUV'};
+  return labels[type] || type;
+ }
+
+ function loadVehicleStatusOverrides(){
+  try{
+   return JSON.parse(localStorage.getItem(VEHICLE_STATUS_KEY) || '{}');
+  }catch{
+   return {};
+  }
+ }
+
+ function saveVehicleStatusOverrides(map){
+  localStorage.setItem(VEHICLE_STATUS_KEY, JSON.stringify(map || {}));
+ }
+
+ function getVehicleStatus(vehicleId, baseStatus){
+  const statusMap = loadVehicleStatusOverrides();
+  return statusMap[vehicleId] || baseStatus || 'available';
+ }
+
+ function markVehicleBooked(vehicleId){
+  const statusMap = loadVehicleStatusOverrides();
+  statusMap[vehicleId] = 'booked';
+  saveVehicleStatusOverrides(statusMap);
+
+  const idx = vehicles.findIndex(v => v.id === vehicleId);
+  if(idx !== -1){
+   vehicles[idx].status = 'booked';
+  }
+
+  try{
+   const saved = loadLocalListings();
+   const localIdx = saved.findIndex(v => v.id === vehicleId);
+   if(localIdx !== -1){
+    saved[localIdx].status = 'booked';
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+   }
+  }catch(err){
+   console.warn('Could not persist booked vehicle locally:', err);
+  }
+
+  renderVehicles();
+ }
+
+ function normalizeVehicle(v){
+  const id = v.id || `${v.model || 'vehicle'}-${v.owner || 'owner'}-${v.plate || 'plate'}`.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return {
+   id,
+   type: v.type || 'car',
+   model: v.model || 'Unnamed vehicle',
+   owner: v.owner || 'Owner',
+   owner_contact: v.owner_contact || v.owner_phone || '—',
+   owner_email: v.owner_email || '—',
+   plate: v.plate || '—',
+   rate: Number(v.rate || 0),
+   location: v.location || '—',
+   seats: v.seats || null,
+   mileage: v.mileage !== undefined && v.mileage !== null && v.mileage !== '' ? Number(v.mileage) : null,
+   photos: Array.isArray(v.photos) ? v.photos.slice(0, 5) : [],
+   status: getVehicleStatus(id, v.status || 'available'),
+   notes: v.notes || 'No additional notes from the owner.'
+  };
+ }
+
+ function renderVehicles(){
+  const grid = document.getElementById('vehicleGrid');
+  const filtered = activeFilter === 'all' ? vehicles : vehicles.filter(v => v.type === activeFilter);
+  document.getElementById('resultCount').textContent = filtered.length;
+
+  if(filtered.length === 0){
+   grid.innerHTML = '<div class="empty-state">No vehicles in this category yet. Be the first to list one.</div>';
+   return;
+  }
+
+  grid.innerHTML = filtered.map(v => `
+   <article class="ticket">
+    <div class="ticket-media">
+     <span class="status-badge ${v.status === 'booked' ? 'booked' : ''}">${v.status === 'booked' ? 'Booked' : 'Available'}</span>
+     ${v.photos && v.photos.length ? `<img src="${v.photos[0]}" alt="${v.model}">` : typeLabel(v.type)}
+     ${v.photos && v.photos.length > 1 ? `<span class="photo-count-badge">+${v.photos.length - 1} more</span>` : ''}
+    </div>
+    <div class="ticket-perf"></div>
+    <div class="ticket-body">
+     <p class="ticket-type">${typeLabel(v.type)} &middot; ${v.plate}</p>
+     <h3 class="ticket-name">${v.model}</h3>
+     <p style="font-size:0.85rem; color:var(--line); margin:0;">${v.notes}</p>
+     <div class="ticket-meta">
+      <span>${v.location} &middot; ${v.seats || '—'} seats</span>
+     </div>
+     <div class="odo-tag">${v.mileage !== null ? v.mileage.toLocaleString() + ' km on the odometer' : 'Odometer reading not provided'}</div>
+     <div class="ticket-foot">
+      <div>
+       <div class="ticket-price">$${v.rate}<small> / day</small></div>
+       <div class="owner-tag">${v.owner}</div>
+      </div>
+      <button class="btn-small request-book-btn" data-vehicle-id="${v.id}" ${v.status === 'booked' ? 'disabled style="background:var(--line); cursor:not-allowed;"' : ''}>${v.status === 'booked' ? 'Unavailable' : 'Request to book'}</button>
+     </div>
+    </div>
+   </article>
+  `).join('');
+ }
+
+ function loadLocalListings(){
+  try{
+   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+   return saved.map(normalizeVehicle);
+  }catch{
+   return [];
+  }
+ }
+
+ function saveLocalListing(vehicle){
+  const saved = loadLocalListings();
+  saved.unshift(vehicle);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+ }
+
+ async function initDatabase(){
+  vehicles = [...loadLocalListings(), ...DEMO_VEHICLES.map(normalizeVehicle)];
+
+  const hasSupabase = SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY' && window.supabase;
+  const isValidKey = SUPABASE_ANON_KEY && (SUPABASE_ANON_KEY.startsWith('eyJ') || SUPABASE_ANON_KEY.startsWith('sb_'));
+  if(!hasSupabase){
+   setDbStatus('demo', 'Database: demo mode');
+   renderVehicles();
+   return;
+  }
+
+  try{
+   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+   setDbStatus('online', 'Database: syncing...');
+   const { data, error } = await supabaseClient
+    .from(SUPABASE_VEHICLE_TABLE)
+    .select('id, type, model, owner, owner_contact, owner_email, plate, rate, location, seats, mileage, photos, status, notes, created_at')
+    .order('created_at', { ascending: false });
+
+   if(error) throw error;
+
+   const remoteVehicles = (data || []).map(normalizeVehicle);
+   vehicles = [...remoteVehicles, ...vehicles];
+   setDbStatus('online', 'Database: online');
+   renderVehicles();
+  }catch(err){
+   console.warn('Supabase sync failed, using local/demo data:', err);
+   setDbStatus('error', 'Database: offline sync');
+   renderVehicles();
+  }
+ }
+
+ document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-chip');
+  if(!btn) return;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.filter;
+  renderVehicles();
+ });
+
+ document.getElementById('vehicleGrid').addEventListener('click', e => {
+  const btn = e.target.closest('.request-book-btn');
+  if(!btn || btn.disabled) return;
+  const vehicle = vehicles.find(v => v.id === btn.dataset.vehicleId);
+  if(vehicle) openBookingModal(vehicle);
+ });
+
+ // ---------- Photo upload preview (max 5) ----------
+ const MAX_PHOTOS = 5;
+ let selectedPhotos = []; // array of data URLs
+ const vehiclePhotoInput = document.getElementById('vehiclePhoto');
+ const photoPreview = document.getElementById('photoPreview');
+ const photoUploadText = document.getElementById('photoUploadText');
+ const photoCountNote = document.getElementById('photoCountNote');
+ const photoUploadLabel = document.getElementById('photoUploadLabel');
+
+ function renderPhotoPreview(){
+  photoPreview.innerHTML = selectedPhotos.map((src, i) => `
+   <div class="photo-thumb">
+    <img src="${src}" alt="Vehicle photo ${i + 1}">
+    <button type="button" data-index="${i}" aria-label="Remove photo">&times;</button>
+   </div>
+  `).join('');
+  photoCountNote.textContent = `${selectedPhotos.length} / ${MAX_PHOTOS} selected`;
+  photoUploadText.textContent = selectedPhotos.length ? 'Add more photos' : 'Click to choose photos';
+  photoUploadLabel.classList.toggle('disabled', selectedPhotos.length >= MAX_PHOTOS);
+ }
+
+ function resetPhotos(){
+  selectedPhotos = [];
+  vehiclePhotoInput.value = '';
+  renderPhotoPreview();
+ }
+ renderPhotoPreview();
+
+ vehiclePhotoInput.addEventListener('change', () => {
+  const files = Array.from(vehiclePhotoInput.files || []);
+  const remaining = MAX_PHOTOS - selectedPhotos.length;
+  if(remaining <= 0){
+   vehiclePhotoInput.value = '';
+   return;
+  }
+  const filesToAdd = files.slice(0, remaining);
+  if(files.length > remaining){
+   alert(`You can upload a maximum of ${MAX_PHOTOS} photos. Only the first ${remaining} of your new selection were added.`);
+  }
+  let loaded = 0;
+  filesToAdd.forEach(file => {
+   const reader = new FileReader();
+   reader.onload = () => {
+    selectedPhotos.push(reader.result);
+    loaded++;
+    if(loaded === filesToAdd.length){
+     vehiclePhotoInput.value = '';
+     renderPhotoPreview();
+    }
+   };
+   reader.readAsDataURL(file);
+  });
+ });
+
+ photoPreview.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-index]');
+  if(!btn) return;
+  selectedPhotos.splice(Number(btn.dataset.index), 1);
+  renderPhotoPreview();
+ });
+
+ // ---------- Modal ----------
+ const overlay = document.getElementById('modalOverlay');
+ const formView = document.getElementById('formView');
+ const confirmView = document.getElementById('confirmView');
+ const ownerForm = document.getElementById('ownerForm');
+
+ const bookingOverlay = document.getElementById('bookingOverlay');
+ const bookingView = document.getElementById('bookingView');
+ const bookingConfirmView = document.getElementById('bookingConfirmView');
+ const bookingForm = document.getElementById('bookingForm');
+ let selectedVehicleForBooking = null;
+
+ function openModal(){
+  overlay.classList.add('open');
+  formView.style.display = 'block';
+  confirmView.style.display = 'none';
+  document.getElementById('ownerName').focus();
+ }
+ function closeModal(){
+  overlay.classList.remove('open');
+ }
+ function openBookingModal(vehicle){
+  selectedVehicleForBooking = vehicle;
+  document.getElementById('bookingVehicleName').textContent = vehicle.model;
+  document.getElementById('bookingOwnerName').textContent = vehicle.owner;
+  document.getElementById('bookingOwnerPhone').textContent = vehicle.owner_contact || 'Not provided';
+  document.getElementById('bookingOwnerEmail').textContent = vehicle.owner_email || 'Not provided';
+  bookingOverlay.classList.add('open');
+  bookingView.style.display = 'block';
+  bookingConfirmView.style.display = 'none';
+  document.getElementById('customerName').focus();
+ }
+ function closeBookingModal(){
+  bookingOverlay.classList.remove('open');
+ }
+
+ ['openModalBtn','openModalBtn2','openModalBtn3'].forEach(id => {
+  document.getElementById(id).addEventListener('click', openModal);
+ });
+ document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+ document.getElementById('confirmCloseBtn').addEventListener('click', closeModal);
+ overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(); });
+
+ document.getElementById('bookingCloseBtn').addEventListener('click', closeBookingModal);
+ document.getElementById('bookingDoneBtn').addEventListener('click', closeBookingModal);
+ bookingOverlay.addEventListener('click', e => { if(e.target === bookingOverlay) closeBookingModal(); });
+
+ document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+   if(overlay.classList.contains('open')) closeModal();
+   if(bookingOverlay.classList.contains('open')) closeBookingModal();
+  }
+ });
+
+ ownerForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const newVehicle = normalizeVehicle({
+   type: document.getElementById('vehicleType').value,
+   model: document.getElementById('vehicleModel').value.trim(),
+   owner: document.getElementById('ownerName').value.trim(),
+   owner_contact: document.getElementById('ownerPhone').value.trim(),
+   owner_email: document.getElementById('ownerEmail').value.trim(),
+   plate: document.getElementById('plateNumber').value.trim(),
+   rate: Number(document.getElementById('dailyRate').value),
+   location: document.getElementById('location').value.trim(),
+   seats: document.getElementById('seats').value || null,
+   mileage: document.getElementById('mileage').value || null,
+   photos: selectedPhotos,
+   status: 'available',
+   notes: document.getElementById('description').value.trim() || 'No additional notes from the owner.'
+  });
+
+  try{
+   if(supabaseClient){
+    const { error } = await supabaseClient.from(SUPABASE_VEHICLE_TABLE).insert([newVehicle]);
+    if(error){
+     // Supabase failed — save locally so the listing isn't lost
+     console.warn('Supabase insert failed, saving locally:', error);
+     saveLocalListing(newVehicle);
+     setDbStatus('demo', 'Database: saved locally');
+    } else {
+     setDbStatus('online', 'Database: online');
+    }
+   }else{
+    saveLocalListing(newVehicle);
+    setDbStatus('demo', 'Database: demo mode');
+   }
+
+   vehicles.unshift(newVehicle);
+   renderVehicles();
+
+   document.getElementById('confirmName').textContent = `${newVehicle.model} is on the board`;
+   formView.style.display = 'none';
+   confirmView.style.display = 'block';
+   ownerForm.reset();
+   resetPhotos();
+   document.getElementById('browse').scrollIntoView({behavior:'smooth'});
+  }catch(err){
+   // Unexpected error — still save locally so the listing isn't lost
+   console.error('Could not save listing:', err);
+   saveLocalListing(newVehicle);
+   vehicles.unshift(newVehicle);
+   renderVehicles();
+   setDbStatus('demo', 'Database: saved locally');
+   document.getElementById('confirmName').textContent = `${newVehicle.model} is on the board`;
+   formView.style.display = 'none';
+   confirmView.style.display = 'block';
+   ownerForm.reset();
+   resetPhotos();
+   document.getElementById('browse').scrollIntoView({behavior:'smooth'});
+  }
+ });
+
+ bookingForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  if(!selectedVehicleForBooking){
+   alert('Please choose a vehicle first.');
+   return;
+  }
+
+  const bookingRequest = {
+   vehicle_id: selectedVehicleForBooking.id,
+   vehicle_model: selectedVehicleForBooking.model,
+   owner: selectedVehicleForBooking.owner,
+   owner_contact: selectedVehicleForBooking.owner_contact || null,
+   owner_email: selectedVehicleForBooking.owner_email || null,
+   customer_name: document.getElementById('customerName').value.trim(),
+   customer_id: document.getElementById('customerId').value.trim(),
+   customer_contact: document.getElementById('customerContact').value.trim(),
+   customer_email: document.getElementById('customerEmail').value.trim(),
+   rental_days: Number(document.getElementById('rentalDays').value),
+   pickup_date: document.getElementById('pickupDate').value,
+   notes: document.getElementById('bookingNotes').value.trim() || null
+  };
+
+  const saveBookingLocally = () => {
+   const key = 'rentmyride_booking_requests';
+   const saved = JSON.parse(localStorage.getItem(key) || '[]');
+   saved.unshift({...bookingRequest, created_at: new Date().toISOString()});
+   localStorage.setItem(key, JSON.stringify(saved));
+  };
+
+  try{
+   if(supabaseClient){
+    const { error } = await supabaseClient.from(SUPABASE_BOOKING_TABLE).insert([bookingRequest]);
+    if(error){
+     console.warn('Supabase booking insert failed, saving locally:', error);
+     saveBookingLocally();
+     setDbStatus('demo', 'Database: saved locally');
+    } else {
+     setDbStatus('online', 'Database: online');
+    }
+   }else{
+    saveBookingLocally();
+    setDbStatus('demo', 'Database: demo mode');
+   }
+
+   // Show composing state on button
+   const sendBtn = bookingForm.querySelector('button[type="submit"]');
+   if(sendBtn){ sendBtn.textContent = 'Sending request…'; sendBtn.disabled = true; }
+
+   const emailResult = await sendOwnerEmail(bookingRequest);
+
+   // Mark the vehicle as booked right after the request is sent
+   markVehicleBooked(selectedVehicleForBooking.id);
+
+   if(supabaseClient && selectedVehicleForBooking.id && !String(selectedVehicleForBooking.id).startsWith('demo-')){
+    try{
+     const { error: bookingStatusError } = await supabaseClient
+      .from(SUPABASE_VEHICLE_TABLE)
+      .update({ status: 'booked' })
+      .eq('id', selectedVehicleForBooking.id);
+     if(bookingStatusError) console.warn('Could not update vehicle status in Supabase:', bookingStatusError);
+    }catch(err){
+     console.warn('Supabase status update failed:', err);
+    }
+   }
+
+   document.getElementById('bookingConfirmName').textContent = `Request sent for ${selectedVehicleForBooking.model}`;
+   const confirmMsgEl = document.querySelector('#bookingConfirmView .confirm p:not(.mark)');
+   if(confirmMsgEl){
+    confirmMsgEl.textContent = emailResult.sent
+     ? `Your booking request has been emailed automatically to ${selectedVehicleForBooking.owner} (${selectedVehicleForBooking.owner_email}).`
+     : `Your booking request could not be emailed automatically. Contact the owner directly at ${selectedVehicleForBooking.owner_email}.`;
+   }
+   bookingView.style.display = 'none';
+   bookingConfirmView.style.display = 'block';
+   bookingForm.reset();
+   if(sendBtn){ sendBtn.textContent = 'Send request'; sendBtn.disabled = false; }
+  }catch(err){
+   // Unexpected error — still save locally and proceed
+   console.error('Could not save booking request:', err);
+   saveBookingLocally();
+   markVehicleBooked(selectedVehicleForBooking.id);
+   setDbStatus('demo', 'Database: saved locally');
+   bookingView.style.display = 'none';
+   bookingConfirmView.style.display = 'block';
+   bookingForm.reset();
+  }
+ });
+
+ initDatabase();
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const slides=document.querySelectorAll('.hero-bg-slider img');
+ let current=0;
+ setInterval(()=>{
+  slides[current].classList.remove('active');
+  current=(current+1)%slides.length;
+  slides[current].classList.add('active');
+ },3000);
+});
+</script>
+</body>
+</html>
