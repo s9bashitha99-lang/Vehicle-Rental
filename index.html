@@ -135,6 +135,31 @@
   transition:color .15s ease;
  }
  nav a:hover, nav a:focus-visible{color:var(--cream);}
+ .nav-toggle{
+  display:none;
+  background:none;
+  border:1.5px solid rgba(255,255,255,0.3);
+  border-radius:6px;
+  width:42px;
+  height:38px;
+  cursor:pointer;
+  padding:0;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:5px;
+ }
+ .nav-toggle span{
+  display:block;
+  width:20px;
+  height:2px;
+  background:var(--cream);
+  transition:transform .2s ease, opacity .2s ease;
+ }
+ .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+ .nav-toggle.open span:nth-child(2){opacity:0;}
+ .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+ .header-actions{display:flex; align-items:center; gap:14px;}
  .btn{
   font-family:var(--body);
   font-weight:600;
@@ -662,6 +687,32 @@
   margin-top:12px;
   text-align:center;
  }
+ .return-date-banner{
+  display:none;
+  align-items:center;
+  gap:10px;
+  background:rgba(47,107,79,0.12);
+  border:1.5px solid rgba(47,107,79,0.35);
+  border-radius:6px;
+  padding:10px 14px;
+  margin-top:10px;
+ }
+ .return-date-banner.visible{ display:flex; }
+ .return-date-banner .rdb-icon{
+  font-size:1.3rem;
+  flex-shrink:0;
+ }
+ .return-date-banner .rdb-text{
+  font-size:0.85rem;
+  color:var(--asphalt);
+  line-height:1.35;
+ }
+ .return-date-banner .rdb-date{
+  font-family:var(--mono);
+  font-weight:700;
+  color:var(--green);
+  font-size:0.9rem;
+ }
  .confirm{
   text-align:center;
   padding:20px 0 6px;
@@ -712,13 +763,55 @@
 
  /* ---------- Responsive ---------- */
  @media (max-width:880px){
-  .hero-inner{grid-template-columns:1fr; gap:50px;}
-  .plate-stack{height:260px;}
-  .plate{width:230px; padding:18px;}
-  .plate-number{font-size:1.6rem;}
-  nav{display:none;}
+  .hero-inner{grid-template-columns:1fr; gap:40px;}
+  .plate-stack{height:240px; order:-1;}
+  .plate{width:220px; padding:16px;}
+  .plate-number{font-size:1.5rem;}
+  .nav-toggle{display:flex;}
+  nav{
+   display:flex;
+   position:absolute;
+   top:100%;
+   left:0;
+   right:0;
+   flex-direction:column;
+   align-items:flex-start;
+   gap:0;
+   background:var(--asphalt-soft);
+   border-top:1px solid rgba(255,255,255,0.1);
+   max-height:0;
+   overflow:hidden;
+   transition:max-height .25s ease;
+   font-size:1rem;
+  }
+  nav.open{max-height:240px;}
+  nav a{width:100%; padding:16px 6vw; border-bottom:1px solid rgba(255,255,255,0.06);}
+  header{flex-wrap:wrap;}
   .steps{grid-template-columns:1fr;}
   .form-row{grid-template-columns:1fr;}
+  section{padding:56px 6vw;}
+  .section-head{align-items:flex-start;}
+  .owner-banner{flex-direction:column; align-items:flex-start; text-align:left;}
+ }
+
+ @media (max-width:600px){
+  .hero{padding:60px 6vw 70px;}
+  h1{font-size:clamp(2.1rem, 9vw, 3rem);}
+  .hero p.lede{font-size:1rem;}
+  .hero-ctas{flex-direction:column; align-items:stretch;}
+  .hero-ctas .btn{width:100%; text-align:center;}
+  .plate-stack{height:190px;}
+  .plate{width:170px; padding:14px;}
+  .plate-number{font-size:1.2rem;}
+  .grid{grid-template-columns:1fr; gap:18px;}
+  .logo{font-size:1.4rem;}
+  .logo-mark{height:32px; width:32px;}
+  .modal{padding:26px 20px 24px;}
+  .modal h2{font-size:1.5rem;}
+  .filters{gap:8px;}
+  .filter-chip{padding:7px 13px; font-size:0.75rem;}
+  .footer-inner{flex-direction:column; align-items:flex-start; text-align:left;}
+  header .header-actions .btn{padding:9px 14px; font-size:0.82rem;}
  }
 
 .hero-bg-slider{
@@ -753,12 +846,17 @@ filter:brightness(0.35);
 
 <header>
  <a href="#top" class="logo"><img src="logo.png" alt="RentMyRide" class="logo-mark">Rent<span>My</span>Ride</a>
- <nav>
+ <nav id="mainNav">
   <a href="#browse">Browse rides</a>
   <a href="#how">How it works</a>
   <a href="#list">List a vehicle</a>
  </nav>
- <button class="btn btn-signal" id="openModalBtn">List your vehicle</button>
+ <div class="header-actions">
+  <button class="btn btn-signal" id="openModalBtn">List your vehicle</button>
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
+   <span></span><span></span><span></span>
+  </button>
+ </div>
 </header>
 
 <div class="lane-divider"></div>
@@ -1007,6 +1105,12 @@ filter:brightness(0.35);
      <div>
       <label for="pickupDate">Pickup date</label>
       <input id="pickupDate" type="date" required>
+     </div>
+    </div>
+    <div id="returnDateBanner" class="return-date-banner">
+     <span class="rdb-icon">📅</span>
+     <div class="rdb-text">
+      Vehicle must be returned by <span id="returnDateDisplay" class="rdb-date"></span>
      </div>
     </div>
     <div class="form-row single">
@@ -1292,6 +1396,103 @@ filter:brightness(0.35);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
  }
 
+ // ---------- Return date auto-calculation ----------
+ function computeReturnDate(pickupDateStr, rentalDays){
+  if(!pickupDateStr || !rentalDays || rentalDays < 1) return null;
+  const d = new Date(pickupDateStr);
+  if(isNaN(d.getTime())) return null;
+  d.setDate(d.getDate() + Number(rentalDays));
+  return d;
+ }
+
+ function formatDateDisplay(dateObj){
+  if(!dateObj) return '';
+  return dateObj.toLocaleDateString('en-US', { weekday:'short', year:'numeric', month:'long', day:'numeric' });
+ }
+
+ function formatDateISO(dateObj){
+  if(!dateObj) return '';
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth()+1).padStart(2,'0');
+  const d = String(dateObj.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+ }
+
+ function updateReturnDateBanner(){
+  const pickupVal = document.getElementById('pickupDate')?.value;
+  const daysVal   = document.getElementById('rentalDays')?.value;
+  const banner    = document.getElementById('returnDateBanner');
+  const display   = document.getElementById('returnDateDisplay');
+  if(!banner || !display) return;
+  const returnDate = computeReturnDate(pickupVal, daysVal);
+  if(returnDate){
+   display.textContent = formatDateDisplay(returnDate);
+   banner.classList.add('visible');
+  } else {
+   banner.classList.remove('visible');
+  }
+ }
+
+ // ---------- Auto-expire bookings whose return date has passed ----------
+ async function expireOverdueBookings(){
+  if(!supabaseClient) return;
+  try{
+   // Fetch all booking requests with pickup_date and rental_days
+   const { data: bookings, error } = await supabaseClient
+    .from(SUPABASE_BOOKING_TABLE)
+    .select('id, vehicle_id, pickup_date, rental_days');
+   if(error){ console.warn('expireOverdueBookings: fetch error', error); return; }
+
+   const todayStr = formatDateISO(new Date());
+   const expiredIds    = [];
+   const expiredVehIds = [];
+
+   (bookings || []).forEach(b => {
+    if(!b.pickup_date || !b.rental_days) return;
+    const returnDate   = computeReturnDate(b.pickup_date, b.rental_days);
+    const returnStr    = formatDateISO(returnDate);
+    if(returnStr && returnStr <= todayStr){
+     expiredIds.push(b.id);
+     if(b.vehicle_id) expiredVehIds.push(b.vehicle_id);
+    }
+   });
+
+   if(expiredIds.length === 0) return;
+
+   // Delete expired booking records
+   const { error: delError } = await supabaseClient
+    .from(SUPABASE_BOOKING_TABLE)
+    .delete()
+    .in('id', expiredIds);
+   if(delError){ console.warn('expireOverdueBookings: delete error', delError); return; }
+
+   console.log(`expireOverdueBookings: removed ${expiredIds.length} expired booking(s)`);
+
+   // Restore vehicle status to available for each expired booking
+   if(expiredVehIds.length > 0){
+    const { error: updError } = await supabaseClient
+     .from(SUPABASE_VEHICLE_TABLE)
+     .update({ status: 'available' })
+     .in('id', expiredVehIds);
+    if(updError) console.warn('expireOverdueBookings: status restore error', updError);
+
+    // Also update local vehicles array and re-render
+    vehicles = vehicles.map(v =>
+     expiredVehIds.includes(v.id) ? { ...v, status: 'available' } : v
+    );
+    renderVehicles();
+   }
+
+   // Clear local status overrides for expired vehicles
+   const statusMap = getLocalStatusMap();
+   expiredVehIds.forEach(id => { delete statusMap[id]; });
+   try{ localStorage.setItem(VEHICLE_STATUS_KEY, JSON.stringify(statusMap)); }catch(e){}
+
+  }catch(err){
+   console.warn('expireOverdueBookings failed:', err);
+  }
+ }
+
  // ---------- Sync vehicle availability from booking_requests ----------
  // On every page load, reads ALL booking_requests from Supabase.
  // Any vehicle whose id appears in that table is marked "booked" (unavailable).
@@ -1388,7 +1589,8 @@ filter:brightness(0.35);
    const remoteVehicles = (data || []).map(normalizeVehicle);
    vehicles = [...remoteVehicles, ...vehicles];
 
-   // After loading all vehicles, sync their status against the booking_requests table
+   // After loading all vehicles, expire any overdue bookings first, then sync status
+   await expireOverdueBookings();
    await syncVehicleStatusFromBookings();
 
    setDbStatus('online', 'Database: online');
@@ -1508,9 +1710,12 @@ filter:brightness(0.35);
   bookingView.style.display = 'block';
   bookingConfirmView.style.display = 'none';
   document.getElementById('customerName').focus();
+  // Reset return date banner when modal opens
+  document.getElementById('returnDateBanner')?.classList.remove('visible');
  }
  function closeBookingModal(){
   bookingOverlay.classList.remove('open');
+  document.getElementById('returnDateBanner')?.classList.remove('visible');
  }
 
  ['openModalBtn','openModalBtn2','openModalBtn3'].forEach(id => {
@@ -1523,6 +1728,29 @@ filter:brightness(0.35);
  document.getElementById('bookingCloseBtn').addEventListener('click', closeBookingModal);
  document.getElementById('bookingDoneBtn').addEventListener('click', closeBookingModal);
  bookingOverlay.addEventListener('click', e => { if(e.target === bookingOverlay) closeBookingModal(); });
+
+ // Mobile nav toggle
+ const navToggle = document.getElementById('navToggle');
+ const mainNav = document.getElementById('mainNav');
+ if(navToggle && mainNav){
+  navToggle.addEventListener('click', () => {
+   const isOpen = mainNav.classList.toggle('open');
+   navToggle.classList.toggle('open', isOpen);
+   navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  mainNav.querySelectorAll('a').forEach(link => {
+   link.addEventListener('click', () => {
+    mainNav.classList.remove('open');
+    navToggle.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+   });
+  });
+ }
+
+ // Return date auto-calculation listeners
+ document.getElementById('rentalDays').addEventListener('input', updateReturnDateBanner);
+ document.getElementById('pickupDate').addEventListener('input', updateReturnDateBanner);
+ document.getElementById('pickupDate').addEventListener('change', updateReturnDateBanner);
 
  document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
