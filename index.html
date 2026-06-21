@@ -135,31 +135,6 @@
   transition:color .15s ease;
  }
  nav a:hover, nav a:focus-visible{color:var(--cream);}
- .nav-toggle{
-  display:none;
-  background:none;
-  border:1.5px solid rgba(255,255,255,0.3);
-  border-radius:6px;
-  width:42px;
-  height:38px;
-  cursor:pointer;
-  padding:0;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:5px;
- }
- .nav-toggle span{
-  display:block;
-  width:20px;
-  height:2px;
-  background:var(--cream);
-  transition:transform .2s ease, opacity .2s ease;
- }
- .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
- .nav-toggle.open span:nth-child(2){opacity:0;}
- .nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
- .header-actions{display:flex; align-items:center; gap:14px;}
  .btn{
   font-family:var(--body);
   font-weight:600;
@@ -763,55 +738,13 @@
 
  /* ---------- Responsive ---------- */
  @media (max-width:880px){
-  .hero-inner{grid-template-columns:1fr; gap:40px;}
-  .plate-stack{height:240px; order:-1;}
-  .plate{width:220px; padding:16px;}
-  .plate-number{font-size:1.5rem;}
-  .nav-toggle{display:flex;}
-  nav{
-   display:flex;
-   position:absolute;
-   top:100%;
-   left:0;
-   right:0;
-   flex-direction:column;
-   align-items:flex-start;
-   gap:0;
-   background:var(--asphalt-soft);
-   border-top:1px solid rgba(255,255,255,0.1);
-   max-height:0;
-   overflow:hidden;
-   transition:max-height .25s ease;
-   font-size:1rem;
-  }
-  nav.open{max-height:240px;}
-  nav a{width:100%; padding:16px 6vw; border-bottom:1px solid rgba(255,255,255,0.06);}
-  header{flex-wrap:wrap;}
+  .hero-inner{grid-template-columns:1fr; gap:50px;}
+  .plate-stack{height:260px;}
+  .plate{width:230px; padding:18px;}
+  .plate-number{font-size:1.6rem;}
+  nav{display:none;}
   .steps{grid-template-columns:1fr;}
   .form-row{grid-template-columns:1fr;}
-  section{padding:56px 6vw;}
-  .section-head{align-items:flex-start;}
-  .owner-banner{flex-direction:column; align-items:flex-start; text-align:left;}
- }
-
- @media (max-width:600px){
-  .hero{padding:60px 6vw 70px;}
-  h1{font-size:clamp(2.1rem, 9vw, 3rem);}
-  .hero p.lede{font-size:1rem;}
-  .hero-ctas{flex-direction:column; align-items:stretch;}
-  .hero-ctas .btn{width:100%; text-align:center;}
-  .plate-stack{height:190px;}
-  .plate{width:170px; padding:14px;}
-  .plate-number{font-size:1.2rem;}
-  .grid{grid-template-columns:1fr; gap:18px;}
-  .logo{font-size:1.4rem;}
-  .logo-mark{height:32px; width:32px;}
-  .modal{padding:26px 20px 24px;}
-  .modal h2{font-size:1.5rem;}
-  .filters{gap:8px;}
-  .filter-chip{padding:7px 13px; font-size:0.75rem;}
-  .footer-inner{flex-direction:column; align-items:flex-start; text-align:left;}
-  header .header-actions .btn{padding:9px 14px; font-size:0.82rem;}
  }
 
 .hero-bg-slider{
@@ -846,17 +779,12 @@ filter:brightness(0.35);
 
 <header>
  <a href="#top" class="logo"><img src="logo.png" alt="RentMyRide" class="logo-mark">Rent<span>My</span>Ride</a>
- <nav id="mainNav">
+ <nav>
   <a href="#browse">Browse rides</a>
   <a href="#how">How it works</a>
   <a href="#list">List a vehicle</a>
  </nav>
- <div class="header-actions">
-  <button class="btn btn-signal" id="openModalBtn">List your vehicle</button>
-  <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mainNav">
-   <span></span><span></span><span></span>
-  </button>
- </div>
+ <button class="btn btn-signal" id="openModalBtn">List your vehicle</button>
 </header>
 
 <div class="lane-divider"></div>
@@ -1145,9 +1073,9 @@ filter:brightness(0.35);
  // Connect the EmailJS service to the Gmail address: sl.rentmyride@gmail.com
  // and replace the configuration values below with your EmailJS details.
 
- const EMAILJS_SERVICE_ID = 'YOUR_EMAILJS_SERVICE_ID';
- const EMAILJS_TEMPLATE_ID = 'YOUR_EMAILJS_TEMPLATE_ID';
- const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+ const EMAILJS_SERVICE_ID = 'service_4bepswp';
+ const EMAILJS_TEMPLATE_ID = 'template_sid24sj';
+ const EMAILJS_PUBLIC_KEY = 'GjA3NF4OySNPo7SdZ';
 
  function buildBookingEmailBody(bookingRequest) {
   return (
@@ -1194,9 +1122,9 @@ filter:brightness(0.35);
    if (
     !EMAILJS_SERVICE_ID ||
     !EMAILJS_TEMPLATE_ID ||
-    EMAILJS_SERVICE_ID.startsWith('service_4bepswp') ||
-    EMAILJS_TEMPLATE_ID.startsWith('template_sid24sj') ||
-    EMAILJS_PUBLIC_KEY.startsWith('GjA3NF4OySNPo7SdZ')
+    EMAILJS_SERVICE_ID.startsWith('YOUR_') ||
+    EMAILJS_TEMPLATE_ID.startsWith('YOUR_') ||
+    EMAILJS_PUBLIC_KEY.startsWith('YOUR_')
    ) {
     console.warn('EmailJS is not configured yet.');
     return { sent: false, reason: 'emailjs-not-configured', body: emailBody };
@@ -1728,24 +1656,6 @@ filter:brightness(0.35);
  document.getElementById('bookingCloseBtn').addEventListener('click', closeBookingModal);
  document.getElementById('bookingDoneBtn').addEventListener('click', closeBookingModal);
  bookingOverlay.addEventListener('click', e => { if(e.target === bookingOverlay) closeBookingModal(); });
-
- // Mobile nav toggle
- const navToggle = document.getElementById('navToggle');
- const mainNav = document.getElementById('mainNav');
- if(navToggle && mainNav){
-  navToggle.addEventListener('click', () => {
-   const isOpen = mainNav.classList.toggle('open');
-   navToggle.classList.toggle('open', isOpen);
-   navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-  });
-  mainNav.querySelectorAll('a').forEach(link => {
-   link.addEventListener('click', () => {
-    mainNav.classList.remove('open');
-    navToggle.classList.remove('open');
-    navToggle.setAttribute('aria-expanded', 'false');
-   });
-  });
- }
 
  // Return date auto-calculation listeners
  document.getElementById('rentalDays').addEventListener('input', updateReturnDateBanner);
