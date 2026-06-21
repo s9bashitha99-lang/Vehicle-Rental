@@ -1317,6 +1317,7 @@ filter:brightness(0.35);
    vehicles = [...remoteVehicles, ...vehicles];
    setDbStatus('online', 'Database: online');
    renderVehicles();
+   await syncVehicleAvailabilityFromBookings();
   }catch(err){
    console.warn('Supabase sync failed, using local/demo data:', err);
    setDbStatus('error', 'Database: offline sync');
@@ -1447,6 +1448,28 @@ filter:brightness(0.35);
  document.getElementById('bookingCloseBtn').addEventListener('click', closeBookingModal);
  document.getElementById('bookingDoneBtn').addEventListener('click', closeBookingModal);
  bookingOverlay.addEventListener('click', e => { if(e.target === bookingOverlay) closeBookingModal(); });
+
+ 
+ async function syncVehicleAvailabilityFromBookings(){
+  if(!supabaseClient) return;
+  try{
+   const { data, error } = await supabaseClient
+    .from(SUPABASE_BOOKING_TABLE)
+    .select('vehicle_id,status');
+   if(error) throw error;
+
+   const bookedIds = new Set((data || [])
+      .filter(r => String(r.status || '').toLowerCase() !== 'cancelled')
+      .map(r => r.vehicle_id));
+
+   vehicles = vehicles.map(v => ({...v, status: bookedIds.has(v.id) ? 'booked' : 'available'}));
+   renderVehicles();
+  }catch(err){
+   console.warn('Availability sync failed', err);
+  }
+ }
+
+ setInterval(syncVehicleAvailabilityFromBookings, 60000);
 
  document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
