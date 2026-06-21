@@ -1292,6 +1292,78 @@ filter:brightness(0.35);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
  }
 
+ // ---------- Sync vehicle availability from booking_requests ----------
+ // On every page load, reads ALL booking_requests from Supabase.
+ // Any vehicle whose id appears in that table is marked "booked" (unavailable).
+ // Any vehicle that has NO matching booking request is restored to "available".
+ async function syncVehicleStatusFromBookings(){
+  if(!supabaseClient) return; // offline / demo mode — nothing to sync
+
+  try{
+   // Fetch all booking_requests to get the full list of booked vehicle IDs
+   const { data: bookings, error } = await supabaseClient
+    .from(SUPABASE_BOOKING_TABLE)
+    .select('vehicle_id');
+
+   if(error){
+    console.warn('Could not fetch booking_requests for status sync:', error);
+    return;
+   }
+
+   // Build a Set of vehicle IDs that have at least one booking request
+   const bookedIds = new Set((bookings || []).map(b => b.vehicle_id).filter(Boolean));
+
+   let changed = false;
+
+   // Walk every vehicle we know about and align its status with the booking table
+   vehicles = vehicles.map(v => {
+    const shouldBeBooked = bookedIds.has(v.id);
+    const currentlyBooked = v.status === 'booked';
+
+    if(shouldBeBooked && !currentlyBooked){
+     // Booking exists in DB but vehicle was shown as available — mark booked
+     changed = true;
+     return { ...v, status: 'booked' };
+    }
+
+    if(!shouldBeBooked && currentlyBooked && !String(v.id).startsWith('demo-')){
+     // No booking request found — restore to available (only for real DB vehicles)
+     // Also update Supabase so the vehicle_listings table stays in sync
+     supabaseClient
+      .from(SUPABASE_VEHICLE_TABLE)
+      .update({ status: 'available' })
+      .eq('id', v.id)
+      .then(({ error: e }) => {
+       if(e) console.warn('Could not restore vehicle status in Supabase:', e);
+      });
+     changed = true;
+     return { ...v, status: 'available' };
+    }
+
+    return v;
+   });
+
+   // Also update the Supabase vehicle_listings rows for any newly-booked vehicles
+   // (catches cases where the status column was out of sync)
+   const idsToMarkBooked = [...bookedIds].filter(id => {
+    const v = vehicles.find(x => x.id === id);
+    return v; // only update vehicles we actually loaded
+   });
+
+   if(idsToMarkBooked.length > 0){
+    await supabaseClient
+     .from(SUPABASE_VEHICLE_TABLE)
+     .update({ status: 'booked' })
+     .in('id', idsToMarkBooked);
+   }
+
+   if(changed) renderVehicles();
+
+  }catch(err){
+   console.warn('syncVehicleStatusFromBookings failed:', err);
+  }
+ }
+
  async function initDatabase(){
   vehicles = [...loadLocalListings(), ...DEMO_VEHICLES.map(normalizeVehicle)];
 
@@ -1306,67 +1378,21 @@ filter:brightness(0.35);
   try{
    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
    setDbStatus('online', 'Database: syncing...');
+   const { data, error } = await supabaseClient
+    .from(SUPABASE_VEHICLE_TABLE)
+    .select('id, type, model, owner, owner_contact, owner_email, plate, rate, location, seats, mileage, photos, status, notes, created_at')
+    .order('created_at', { ascending: false });
 
-   // Fetch vehicles and booking_requests in parallel
-   const [vehicleResult, bookingResult] = await Promise.all([
-    supabaseClient
-     .from(SUPABASE_VEHICLE_TABLE)
-     .select('id, type, model, owner, owner_contact, owner_email, plate, rate, location, seats, mileage, photos, status, notes, created_at')
-     .order('created_at', { ascending: false }),
-    supabaseClient
-     .from(SUPABASE_BOOKING_TABLE)
-     .select('vehicle_id')
-   ]);
+   if(error) throw error;
 
-   if(vehicleResult.error) throw vehicleResult.error;
-
-   // Build a set of vehicle IDs that have at least one booking request
-   const bookedVehicleIds = new Set(
-    (bookingResult.data || [])
-     .map(b => b.vehicle_id)
-     .filter(Boolean)
-   );
-
-   // Apply bookings: if a vehicle appears in booking_requests, mark it unavailable
-   const remoteVehicles = (vehicleResult.data || []).map(v => {
-    if(bookedVehicleIds.has(v.id)){
-     v = { ...v, status: 'booked' };
-     // Also persist the override locally so it survives offline sessions
-     const statusMap = loadVehicleStatusOverrides();
-     statusMap[v.id] = 'booked';
-     saveVehicleStatusOverrides(statusMap);
-    }
-    return normalizeVehicle(v);
-   });
-
+   const remoteVehicles = (data || []).map(normalizeVehicle);
    vehicles = [...remoteVehicles, ...vehicles];
+
+   // After loading all vehicles, sync their status against the booking_requests table
+   await syncVehicleStatusFromBookings();
+
    setDbStatus('online', 'Database: online');
    renderVehicles();
-
-   // Set up a real-time subscription so any new booking made from another
-   // browser/tab instantly marks the vehicle unavailable on this page too.
-   supabaseClient
-    .channel('booking-requests-changes')
-    .on(
-     'postgres_changes',
-     { event: 'INSERT', schema: 'public', table: SUPABASE_BOOKING_TABLE },
-     payload => {
-      const vehicleId = payload.new && payload.new.vehicle_id;
-      if(!vehicleId) return;
-      // Update in Supabase (best-effort)
-      supabaseClient
-       .from(SUPABASE_VEHICLE_TABLE)
-       .update({ status: 'booked' })
-       .eq('id', vehicleId)
-       .then(({ error }) => {
-        if(error) console.warn('Real-time status update failed:', error);
-       });
-      // Immediately reflect on this page
-      markVehicleBooked(vehicleId);
-     }
-    )
-    .subscribe();
-
   }catch(err){
    console.warn('Supabase sync failed, using local/demo data:', err);
    setDbStatus('error', 'Database: offline sync');
