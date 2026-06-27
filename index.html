@@ -1285,10 +1285,10 @@ filter:brightness(0.35);
      <div class="ticket-meta">
       <span>${v.location} &middot; ${v.seats || '—'} seats</span>
      </div>
-     <div class="odo-tag">${v.mileage !== null ? v.mileage.toLocaleString() + ' km on the odometer' : 'Odometer reading not provided'}</div>
+     <div class="odo-tag">${v.mileage !== null ? v.mileage.toLocaleString() + 'Vehicle Mileage' : 'Mileage reading not provided'}</div>
      <div class="ticket-foot">
       <div>
-       <div class="ticket-price">$${v.rate}<small> / day</small></div>
+       <div class="ticket-price">Rs.${v.rate}<small> / day</small></div>
        <div class="owner-tag">${v.owner}</div>
       </div>
       <button class="btn-small request-book-btn" data-vehicle-id="${v.id}" ${v.status === 'booked' ? 'disabled style="background:var(--line); cursor:not-allowed;"' : ''}>${v.status === 'booked' ? 'Unavailable' : 'Request to book'}</button>
